@@ -1,0 +1,13 @@
+Resolved 40 packages in 236ms
+   Building captcha-agent @ file:///Users/irramfatima/Desktop/captch/captcha-agent
+      Built captcha-agent @ file:///Users/irramfatima/Desktop/captch/captcha-agent
+Prepared 1 package in 324ms
+Uninstalled 1 package in 0.62ms
+Installed 1 package in 1ms
+ ~ captcha-agent==0.1.0 (from file:///Users/irramfatima/Desktop/captch/captcha-agent)
+Checked 2 packages in 1ms
+Generated /Users/irramfatima/Desktop/captch/captcha-agent/fixtures/assets/slider_bg.png and /Users/irramfatima/Desktop/captch/captcha-agent/fixtures/assets/slider_piece.png
+Generated 16 image-grid tiles in /Users/irramfatima/Desktop/captch/captcha-agent/fixtures/assets/grid
+....................s.......                                             [100%]
+27 passed, 1 skipped in 59.18s
+BOOTSTRAP OK

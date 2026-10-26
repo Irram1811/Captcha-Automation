@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkbox CAPTCHA Fixture</title>
+  <link rel="stylesheet" href="css/theme.css?v=human-ui-2">
+  <style>
+    body { font: 16px system-ui, sans-serif; margin: 3rem; color: #1f2937; }
+    .captcha { width: 310px; padding: 1rem; border: 1px solid #d1d5db; border-radius: 8px; }
+    [role="checkbox"] { display: flex; align-items: center; gap: .65rem; cursor: pointer; user-select: none; }
+    .box { width: 24px; height: 24px; border: 2px solid #6b7280; border-radius: 4px; display: grid; place-items: center; }
+    [aria-checked="true"] .box { color: white; background: #16a34a; border-color: #16a34a; }
+    .spinner { width: 16px; height: 16px; border: 3px solid #d1d5db; border-top-color: #2563eb; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+    [aria-busy="true"] .spinner { display: block; }
+    [aria-busy="true"] .box { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #status { min-height: 1.5em; margin-top: 1rem; }
+    .verified { color: #15803d; font-weight: 600; }
+  </style>
+</head>
+<body class="fixture-page human-page">
+  <video class="fixture-video" autoplay muted loop playsinline aria-hidden="true"><source src="assets/background.mp4" type="video/mp4"></video>
+  <main class="fixture-card captcha">
+    <div class="human-icon" aria-hidden="true"><span class="shield-mark">●●</span></div>
+    <p class="eyebrow">Step 1 · Human verification</p>
+    <h1>Wait! Are you human?</h1>
+    <p class="lead">Please confirm you’re not a robot.</p>
+    <div id="checkbox" role="checkbox" aria-checked="false" aria-busy="false" tabindex="0">
+      <span class="box" aria-hidden="true"></span><span class="spinner" aria-hidden="true"></span>
+      <span>I am human</span>
+    </div>
+    <p id="status" aria-live="polite"></p>
+  </main>
+  <script>
+    const checkbox = document.querySelector('#checkbox');
+    const status = document.querySelector('#status');
+    function verify() {
+      if (checkbox.getAttribute('aria-checked') !== 'false' || checkbox.getAttribute('aria-busy') === 'true') return;
+      checkbox.setAttribute('aria-busy', 'true');
+      status.textContent = 'checking…';
+      window.setTimeout(() => {
+        checkbox.setAttribute('aria-busy', 'false');
+        checkbox.setAttribute('aria-checked', 'true');
+        checkbox.querySelector('.box').textContent = '✓';
+        status.textContent = 'verified';
+        status.className = 'verified';
+        window.__captcha_solved = true;
+        if (window.parent !== window) {
+          window.parent.postMessage({type: 'captcha-solved', stage: 0}, window.location.origin);
+        }
+      }, 250);
+    }
+    checkbox.addEventListener('click', verify);
+    checkbox.addEventListener('keydown', (event) => {
+      if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); verify(); }
+    });
+  </script>
+</body>
+</html>

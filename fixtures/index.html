@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CAPTCHA Agent Fixtures</title>
+  <link rel="stylesheet" href="css/theme.css?v=landing-flow-1">
+  <style>
+    :root { color-scheme: light; font: 16px system-ui, sans-serif; }
+    body { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem; color: #172033; background: #f8fafc; }
+    h1 { margin-bottom: .4rem; }
+    .intro { color: #475569; margin-bottom: 2rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .card { display: block; padding: 1.25rem; color: inherit; text-decoration: none; background: white; border: 1px solid #dbe3ef; border-radius: 12px; box-shadow: 0 4px 14px #0f172a0d; }
+    .card:hover { border-color: #2563eb; transform: translateY(-2px); }
+    .card h2 { margin: 0 0 .5rem; font-size: 1.15rem; }
+    .card p { margin: 0; color: #64748b; }
+    code { background: #e2e8f0; padding: .15rem .3rem; border-radius: 4px; }
+  </style>
+</head>
+<body class="fixture-page landing-page">
+  <video class="landing-video" autoplay muted loop playsinline aria-hidden="true"><source src="assets/background.mp4" type="video/mp4"></video>
+  <main class="landing-shell" id="landing-shell">
+    <section class="landing-hero">
+      <p class="eyebrow">Self-hosted QA playground</p>
+      <h1>Verify the complete workflow</h1>
+      <p class="intro">Complete each local verification stage manually. The next stage unlocks only after the current one is verified.</p>
+      <a class="primary-action" href="/workflow.html">Start the four-stage flow <span aria-hidden="true">→</span></a>
+    </section>
+    <section class="fixture-overview" aria-label="Verification stages">
+      <div class="section-heading">
+        <div><p class="eyebrow">Four local stages</p><h2>What you’ll complete</h2></div>
+        <span class="server-badge"><span></span> 127.0.0.1:8765</span>
+      </div>
+      <div class="grid">
+        <a class="card" href="/checkbox.html"><span class="card-icon">✓</span><span class="card-number">01</span><h3>Human verification</h3><p>Click the “I’m not a robot” checkbox.</p></a>
+        <a class="card" href="/slider.html?seed=1"><span class="card-icon">↔</span><span class="card-number">02</span><h3>Slider puzzle</h3><p>Drag the blue handle into the matching gap.</p></a>
+        <a class="card" href="/imagegrid.html?seed=1"><span class="card-icon">▦</span><span class="card-number">03</span><h3>Image grid</h3><p>Select the matching original shapes and verify.</p></a>
+        <a class="card" href="/none.html"><span class="card-icon">○</span><span class="card-number">04</span><h3>No CAPTCHA</h3><p>Final stage loaded automatically after the image grid.</p></a>
+      </div>
+    </section>
+  </main>
+  <section class="embedded-workflow" id="workflow-panel" hidden aria-label="CAPTCHA verification workflow">
+    <iframe id="workflow-frame" title="CAPTCHA verification workflow"></iframe>
+  </section>
+  <script>
+    const startFlow = document.querySelector('.primary-action');
+    const landingShell = document.querySelector('#landing-shell');
+    const workflowPanel = document.querySelector('#workflow-panel');
+    const workflowFrame = document.querySelector('#workflow-frame');
+    startFlow.addEventListener('click', (event) => {
+      event.preventDefault();
+      landingShell.hidden = true;
+      workflowPanel.hidden = false;
+      workflowFrame.src = 'workflow.html?embedded=' + Date.now();
+      workflowPanel.scrollIntoView({behavior: 'smooth', block: 'start'});
+    });
+  </script>
+</body>
+</html>

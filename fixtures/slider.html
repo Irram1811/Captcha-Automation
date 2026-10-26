@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Slider CAPTCHA Fixture</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <style>
+    body { font: 16px system-ui, sans-serif; margin: 3rem; color: #1f2937; }
+    .captcha { width: 360px; padding: 1rem; border: 1px solid #d1d5db; border-radius: 8px; }
+    #puzzle { position: relative; width: 320px; height: 160px; overflow: hidden; border-radius: 5px; }
+    #scene { position: absolute; inset: 0; width: 320px; height: 160px; }
+    #piece { position: absolute; left: 0; top: 54px; width: 52px; height: 52px; pointer-events: none; }
+    #track { position: relative; height: 28px; margin-top: 18px; background: #e5e7eb; border-radius: 14px; }
+    #handle { position: absolute; top: -4px; left: 0; width: 36px; height: 36px; border: 0; border-radius: 50%; background: #2563eb; cursor: grab; touch-action: none; }
+    #handle:active { cursor: grabbing; }
+    #status { min-height: 1.5em; }
+    .verified { color: #15803d; font-weight: 600; }
+    .retry { color: #b91c1c; }
+  </style>
+</head>
+<body class="fixture-page slider-page">
+  <video class="fixture-video" autoplay muted loop playsinline aria-hidden="true"><source src="assets/background.mp4" type="video/mp4"></video>
+  <main class="fixture-card captcha">
+    <p class="eyebrow">Step 2 · Puzzle verification</p>
+    <h1>Complete the puzzle</h1>
+    <p class="lead">Move the piece into the matching gap.</p>
+    <div id="slider" data-gap-x="" aria-label="Slider puzzle">
+      <div id="puzzle"><canvas id="scene" width="320" height="160"></canvas><img id="piece" alt="Puzzle piece"></div>
+      <div class="slider-meta"><span>Drag the blue handle</span><span>Step 2 of 4</span></div>
+      <div id="track"><button id="handle" type="button" aria-label="Drag puzzle handle"></button></div>
+    </div>
+    <p id="status" aria-live="polite"></p>
+  </main>
+  <script>
+    const WIDTH = 320, HEIGHT = 160, PIECE = 52;
+    const slider = document.querySelector('#slider');
+    const canvas = document.querySelector('#scene');
+    const ctx = canvas.getContext('2d');
+    const track = document.querySelector('#track');
+    const handle = document.querySelector('#handle');
+    const piece = document.querySelector('#piece');
+    const status = document.querySelector('#status');
+    const bg = new Image();
+    const seedParam = new URLSearchParams(window.location.search).get('seed');
+    const seedValue = Number(seedParam || 0);
+    const normalizedSeed = Number.isFinite(seedValue) ? Math.trunc(seedValue) : 0;
+    let gapX = 60 + (Math.abs(normalizedSeed) % (240 - 60 + 1));
+    let dragging = false;
+    let currentX = 0;
+    // This attribute is intentionally test-only and is not consulted by the interaction logic.
+    slider.dataset.gapX = String(gapX);
+    function drawGap() {
+      ctx.save();
+      // Keep the gap's visual signature identical to slider_piece.png so the
+      // solver can match edges without reading the hidden test attribute.
+      ctx.fillStyle = 'rgb(28, 62, 93)';
+      ctx.strokeStyle = 'rgb(220, 240, 255)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(gapX + 10, 54); ctx.lineTo(gapX + 42, 54); ctx.lineTo(gapX + 42, 66);
+      ctx.lineTo(gapX + 52, 74); ctx.lineTo(gapX + 42, 82); ctx.lineTo(gapX + 42, 106);
+      ctx.lineTo(gapX + 10, 106); ctx.lineTo(gapX + 10, 92); ctx.lineTo(gapX, 84);
+      ctx.lineTo(gapX + 10, 76); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+    }
+    bg.onload = () => { ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT); drawGap(); };
+    const assetQuery = seedParam === null ? '' : `?seed=${encodeURIComponent(seedParam)}`;
+    piece.src = `assets/slider_piece.png${assetQuery}`;
+    bg.src = `assets/slider_bg.png${assetQuery}`;
+    function move(clientX) {
+      const bounds = track.getBoundingClientRect();
+      const max = bounds.width - handle.offsetWidth;
+      currentX = Math.max(0, Math.min(max, clientX - bounds.left - handle.offsetWidth / 2));
+      handle.style.left = `${currentX}px`;
+      piece.style.left = `${currentX * (WIDTH - PIECE) / max}px`;
+    }
+    handle.addEventListener('mousedown', (event) => { dragging = true; move(event.clientX); });
+    window.addEventListener('mousemove', (event) => { if (dragging) move(event.clientX); });
+    window.addEventListener('mouseup', () => {
+      if (!dragging) return;
+      dragging = false;
+      const pieceX = parseFloat(piece.style.left) || 0;
+      if (Math.abs(pieceX - gapX) <= 4) {
+        piece.style.left = `${gapX}px`; status.textContent = 'verified'; status.className = 'verified'; window.__captcha_solved = true;
+      } else {
+        status.textContent = 'try again'; status.className = 'retry'; currentX = 0; handle.style.left = '0px'; piece.style.left = '0px';
+      }
+    });
+  </script>
+</body>
+</html>

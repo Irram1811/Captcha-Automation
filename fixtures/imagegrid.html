@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Local Image Grid Fixture</title>
+  <link rel="stylesheet" href="css/theme.css?v=grid-scroll-3">
+  <style>
+    body { font: 16px system-ui, sans-serif; margin: 2rem; color: #1f2937; }
+    .challenge { width: min(560px, 100%); padding: 1rem; border: 1px solid #d1d5db; border-radius: 8px; }
+    .prompt { font-size: 1.15rem; font-weight: 600; }
+    #grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 1rem 0; }
+    .tile { aspect-ratio: 1; padding: 0; border: 3px solid transparent; background: #e5e7eb; cursor: pointer; }
+    .tile:hover, .tile:focus-visible { border-color: #2563eb; outline: none; }
+    .tile.selected { border-color: #16a34a; box-shadow: inset 0 0 0 3px white; }
+    .tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    #verify { padding: .65rem 1.25rem; border: 0; border-radius: 6px; color: white; background: #2563eb; cursor: pointer; font-weight: 600; }
+    #status { min-height: 1.5em; }
+    .verified { color: #15803d; font-weight: 600; }
+    .retry { color: #b91c1c; }
+  </style>
+</head>
+<body class="fixture-page imagegrid-page">
+  <video class="fixture-video" autoplay muted loop playsinline aria-hidden="true"><source src="assets/background.mp4" type="video/mp4"></video>
+  <main class="fixture-card challenge">
+    <p class="eyebrow">Step 3 · Image verification</p>
+    <h1>Local image verification</h1>
+    <p class="prompt">Select all squares with <span id="label"></span></p>
+    <div id="grid" aria-label="Image selection grid"></div>
+    <button id="verify" type="button">Verify</button>
+    <p id="status" aria-live="polite"></p>
+  </main>
+  <script>
+    const labels = ['circle', 'triangle', 'square', 'star'];
+    const params = new URLSearchParams(window.location.search);
+    const seed = Number(params.get('seed') || 0) || 0;
+    const targetLabel = labels[((seed % labels.length) + labels.length) % labels.length];
+    const grid = document.querySelector('#grid');
+    const label = document.querySelector('#label');
+    const status = document.querySelector('#status');
+    const verify = document.querySelector('#verify');
+    let attempt = 0;
+    label.textContent = targetLabel;
+
+    function shuffledTiles() {
+      const tiles = Array.from({length: 16}, (_, index) => index);
+      let state = Math.abs(seed) + attempt + 1;
+      for (let index = tiles.length - 1; index > 0; index -= 1) {
+        state = (state * 1664525 + 1013904223) >>> 0;
+        const swap = state % (index + 1);
+        [tiles[index], tiles[swap]] = [tiles[swap], tiles[index]];
+      }
+      return tiles;
+    }
+
+    function render() {
+      grid.replaceChildren();
+      for (const tileIndex of shuffledTiles()) {
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'tile';
+        tile.dataset.label = labels[tileIndex % labels.length];
+        tile.dataset.tileIndex = String(tileIndex);
+        tile.setAttribute('aria-label', `Image tile ${tileIndex + 1}`);
+        const image = document.createElement('img');
+        image.src = `assets/grid/tile_${String(tileIndex).padStart(2, '0')}.png`;
+        image.alt = '';
+        tile.append(image);
+        tile.addEventListener('click', () => {
+          tile.classList.toggle('selected');
+          tile.setAttribute('aria-pressed', String(tile.classList.contains('selected')));
+        });
+        grid.append(tile);
+      }
+    }
+
+    verify.addEventListener('click', () => {
+      const selected = [...grid.querySelectorAll('.tile.selected')].map(tile => tile.dataset.label).sort();
+      const expected = [...grid.querySelectorAll('.tile')].map(tile => tile.dataset.label)
+        .filter(tileLabel => tileLabel === targetLabel).sort();
+      if (JSON.stringify(selected) === JSON.stringify(expected)) {
+        status.textContent = 'verified';
+        status.className = 'verified';
+        window.__captcha_solved = true;
+        if (window.parent !== window) {
+          window.parent.postMessage({type: 'captcha-solved', stage: 2}, window.location.origin);
+        }
+      } else {
+        status.textContent = 'try again';
+        status.className = 'retry';
+        attempt += 1;
+        render();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

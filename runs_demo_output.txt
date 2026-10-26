@@ -1,0 +1,59 @@
+200  slider.html?seed=1
+200  assets/slider_bg.png?seed=1
+200  assets/slider_piece.png?seed=1
+200  imagegrid.html?seed=1
+200  checkbox.html
+200  none.html
+             Run 2026-10-25T16-52-11_local_checkbox              
+┏━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━┓
+┃ Target         ┃ Detected ┃ Tool           ┃ Success  ┃ Steps ┃
+┡━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━┩
+│ local_checkbox │ checkbox │ click_checkbox │ verified │ 6     │
+└────────────────┴──────────┴────────────────┴──────────┴───────┘
+            Run 2026-10-25T16-52-12_local_slider             
+┏━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━┓
+┃ Target       ┃ Detected ┃ Tool         ┃ Success  ┃ Steps ┃
+┡━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━┩
+│ local_slider │ slider   │ solve_slider │ verified │ 6     │
+└──────────────┴──────────┴──────────────┴──────────┴───────┘
+               Run 2026-10-25T16-52-13_local_imagegrid               
+┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┓
+┃ Target          ┃ Detected   ┃ Tool             ┃ Success ┃ Steps ┃
+┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━┩
+│ local_imagegrid │ image_grid │ solve_image_grid │ failed  │ 5     │
+└─────────────────┴────────────┴──────────────────┴─────────┴───────┘
+Reason: ANTHROPIC_API_KEY is missing or no tile classifier was injected
+        Run 2026-10-25T16-52-14_local_none         
+┏━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━┳━━━━━━━━━━┳━━━━━━━┓
+┃ Target     ┃ Detected ┃ Tool ┃ Success  ┃ Steps ┃
+┡━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━╇━━━━━━━━━━╇━━━━━━━┩
+│ local_none │ none     │ skip │ verified │ 5     │
+└────────────┴──────────┴──────┴──────────┴───────┘
+Reason: no CAPTCHA detected
+Summary: runs/summary.md
+                                Fixture Measurement Rates                                 
+┏━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━┳━━━━━━━━━━━┳━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Widget     ┃ Classifier ┃ Runs ┃ Successes ┃ Rate ┃ Median duration (s) ┃ Failed seeds ┃
+┡━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━╇━━━━━━━━━━━╇━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
+│ slider     │ —          │ 20   │ 20        │ 1.0  │ 1.255090000020573   │ []           │
+│ image_grid │ fake       │ 20   │ 20        │ 1.0  │ 1.6545549580187071  │ []           │
+└────────────┴────────────┴──────┴───────────┴──────┴─────────────────────┴──────────────┘
+# Fixture Measurement Rates
+
+| Widget | Classifier | Runs | Successes | Rate | Median duration (s) | Failed seeds |
+|---|---|---:|---:|---:|---:|---|
+| slider | — | 20 | 20 | 100.00% | 1.255 | [] |
+| image_grid | fake | 20 | 20 | 100.00% | 1.655 | [] |
+
+Caveats: Fake image-grid mode uses the generated manifest as a harness-side oracle and measures the click/verify pipeline, not vision accuracy. All measurements cover only self-hosted fixtures.
+
+Sanity expectation: fake image-grid mode should be 20/20; this is a note, not a gate.
+# CAPTCHA Run Summary
+
+| Target | Mode | Widget detected | Tool used | Verdict | Attempts | Duration | Report |
+|---|---|---|---|---|---:|---:|---|
+| `local_checkbox` | `deterministic` | `checkbox` | `click_checkbox` | **PASS** | 0 | 0.673s | [2026-10-25T16-52-11_local_checkbox](./2026-10-25T16-52-11_local_checkbox/report.md) |
+| `local_slider` | `deterministic` | `slider` | `solve_slider` | **PASS** | 1 | 1.438s | [2026-10-25T16-52-12_local_slider](./2026-10-25T16-52-12_local_slider/report.md) |
+| `local_imagegrid` | `deterministic` | `image_grid` | `solve_image_grid` | **SKIPPED** | 0 | 0.383s | [2026-10-25T16-52-13_local_imagegrid](./2026-10-25T16-52-13_local_imagegrid/report.md) |
+| `local_none` | `deterministic` | `none` | `skip` | **SKIPPED** | 0 | 0.285s | [2026-10-25T16-52-14_local_none](./2026-10-25T16-52-14_local_none/report.md) |
+none` | `skip` | **SKIPPED** | 0 | 0.355s | [2026-10-25T16-51-58_local_none](./2026-10-25T16-51-58_local_none/report.md) |

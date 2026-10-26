@@ -1,0 +1,9 @@
+headless: true
+viewport:
+  width: 1280
+  height: 800
+step_timeout_ms: 10000
+max_steps: 20
+max_slider_attempts: 3
+tile_classifier: anthropic
+run_dir: runs

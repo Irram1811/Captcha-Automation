@@ -1,0 +1,15 @@
+playwright
+pydantic
+pyyaml
+typer
+rich
+python-dotenv
+aiohttp
+opencv-python-headless
+numpy
+pillow
+anthropic
+
+# Development
+pytest
+pytest-asyncio

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CAPTCHA Agent Workflow</title>
+  <link rel="stylesheet" href="css/theme.css?v=workflow-video-1">
+  <style>
+    :root { color-scheme: light; font: 16px system-ui, sans-serif; }
+    body { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; color: #172033; background: #f8fafc; }
+    .steps { display: flex; gap: .5rem; flex-wrap: wrap; margin: 1rem 0; }
+    .step { padding: .5rem .75rem; border: 1px solid #cbd5e1; border-radius: 999px; background: white; color: #64748b; }
+    .step.active { color: #1d4ed8; border-color: #60a5fa; background: #eff6ff; }
+    .step.done { color: #15803d; border-color: #86efac; background: #f0fdf4; }
+    #status { padding: .75rem 1rem; border-radius: 8px; background: white; border: 1px solid #dbe3ef; }
+    #stage { width: 100%; min-height: 390px; border: 1px solid #cbd5e1; border-radius: 10px; background: white; }
+    .note { color: #64748b; font-size: .9rem; }
+  </style>
+</head>
+<body class="fixture-page workflow-page">
+  <video class="workflow-video" autoplay muted loop playsinline aria-hidden="true"><source src="assets/background.mp4" type="video/mp4"></video>
+  <main class="workflow-shell">
+  <header class="workflow-header">
+  <p class="eyebrow">Local QA harness</p>
+  <h1>CAPTCHA Agent Workflow</h1>
+  <p class="lead">Checkbox → slider puzzle → image grid → normal login page.</p>
+  </header>
+  <div class="steps" aria-label="Workflow progress">
+    <span class="step active" data-step="0">1. Checkbox</span>
+    <span class="step" data-step="1">2. Slider puzzle</span>
+    <span class="step" data-step="2">3. Image grid</span>
+    <span class="step" data-step="3">4. No CAPTCHA</span>
+  </div>
+  <p id="status" class="workflow-status" aria-live="polite">Please complete the checkbox manually.</p>
+  <iframe id="stage" title="Current workflow stage"></iframe>
+  <p class="note">Complete each local fixture manually. The next stage opens only after the current stage reports verified.</p>
+  </main>
+  <script>
+    const stages = ['checkbox.html?workflow=' + Date.now(), 'slider.html?workflow=' + Date.now(), 'imagegrid.html?seed=1&ui=grid-scroll-3', 'none.html?workflow=' + Date.now()];
+    const frame = document.querySelector('#stage');
+    const status = document.querySelector('#status');
+    const pills = [...document.querySelectorAll('.step')];
+    let index = 0;
+    let advanced = false;
+
+    window.addEventListener('message', (event) => {
+      if (event.origin === window.location.origin && event.data?.type === 'captcha-solved') {
+        if (index === event.data.stage && !advanced) next();
+      }
+    });
+
+    function markStep(doneIndex) {
+      pills.forEach((pill, pillIndex) => {
+        pill.classList.toggle('done', pillIndex < doneIndex);
+        pill.classList.toggle('active', pillIndex === doneIndex);
+      });
+    }
+
+    function next() {
+      if (advanced) return;
+      advanced = true;
+      if (index < stages.length - 1) {
+        index += 1;
+        markStep(index);
+        frame.src = stages[index];
+        status.textContent = index === 3
+          ? 'All local checks verified. No CAPTCHA is present on the final page.'
+          : 'Verification complete. Loading the next local challenge…';
+      } else {
+        status.textContent = 'Workflow complete.';
+      }
+    }
+
+    function waitFor(check, onSuccess, attempts = 100) {
+      if (check()) return onSuccess();
+      if (attempts > 0) setTimeout(() => waitFor(check, onSuccess, attempts - 1), 50);
+    }
+
+    function stageSolved() {
+      try {
+        return frame.contentWindow.__captcha_solved === true ||
+          frame.contentDocument?.querySelector('#status')?.textContent.trim() === 'verified';
+      } catch (error) {
+        return false;
+      }
+    }
+
+    frame.addEventListener('load', () => {
+      advanced = false;
+      if (index === 0) {
+        status.textContent = 'Please click “I\'m not a robot” manually.';
+        waitFor(stageSolved,
+          () => { status.textContent = 'Checkbox verified. Loading slider puzzle…'; setTimeout(next, 150); });
+      } else if (index === 1) {
+        status.textContent = 'Please drag the puzzle piece into the gap manually.';
+        waitFor(stageSolved,
+          () => { status.textContent = 'Slider verified. Loading image grid…'; setTimeout(next, 150); });
+      } else if (index === 2) {
+        status.textContent = 'Select the matching shapes, then verify the image grid manually.';
+        waitFor(stageSolved,
+          () => { status.textContent = 'Image grid verified. Loading final page…'; setTimeout(next, 150); });
+      } else {
+        status.textContent = 'All CAPTCHA stages verified. No CAPTCHA is present on the final page.';
+      }
+    });
+    frame.src = stages[0];
+  </script>
+</body>
+</html>

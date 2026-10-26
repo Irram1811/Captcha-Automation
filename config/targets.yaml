@@ -1,0 +1,29 @@
+targets:
+  - id: local_checkbox
+    url: http://127.0.0.1:8765/checkbox.html
+    expected_widget: checkbox
+    success:
+      kind: selector_text
+      selector: "#status"
+      expected: "verified"
+  - id: local_slider
+    url: http://127.0.0.1:8765/slider.html
+    expected_widget: slider
+    success:
+      kind: selector_text
+      selector: "#status"
+      expected: "verified"
+  - id: local_imagegrid
+    url: http://127.0.0.1:8765/imagegrid.html?seed=1
+    expected_widget: image_grid
+    success:
+      kind: selector_text
+      selector: "#status"
+      expected: "verified"
+  - id: local_none
+    url: http://127.0.0.1:8765/none.html
+    expected_widget: none
+    success:
+      kind: selector_visible
+      selector: "#status"
+      expected: true

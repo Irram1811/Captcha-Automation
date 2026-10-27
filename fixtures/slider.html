@@ -47,6 +47,7 @@
     const normalizedSeed = Number.isFinite(seedValue) ? Math.trunc(seedValue) : 0;
     let gapX = 60 + (Math.abs(normalizedSeed) % (240 - 60 + 1));
     let dragging = false;
+    let activePointerId = null;
     let currentX = 0;
     // This attribute is intentionally test-only and is not consulted by the interaction logic.
     slider.dataset.gapX = String(gapX);
@@ -76,16 +77,33 @@
     }
     handle.addEventListener('mousedown', (event) => { dragging = true; move(event.clientX); });
     window.addEventListener('mousemove', (event) => { if (dragging) move(event.clientX); });
-    window.addEventListener('mouseup', () => {
+    handle.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      activePointerId = event.pointerId;
+      try { handle.setPointerCapture?.(event.pointerId); } catch (error) { /* synthetic events may not have an active pointer */ }
+      dragging = true;
+      move(event.clientX);
+    });
+    window.addEventListener('pointermove', (event) => {
+      if (dragging && (activePointerId === null || event.pointerId === activePointerId)) move(event.clientX);
+    });
+    function releasePointer() {
       if (!dragging) return;
       dragging = false;
+      activePointerId = null;
       const pieceX = parseFloat(piece.style.left) || 0;
       if (Math.abs(pieceX - gapX) <= 4) {
         piece.style.left = `${gapX}px`; status.textContent = 'verified'; status.className = 'verified'; window.__captcha_solved = true;
+        if (window.parent !== window) {
+          window.parent.postMessage({type: 'captcha-solved', stage: 1}, window.location.origin);
+        }
       } else {
         status.textContent = 'try again'; status.className = 'retry'; currentX = 0; handle.style.left = '0px'; piece.style.left = '0px';
       }
-    });
+    }
+    window.addEventListener('pointerup', releasePointer);
+    window.addEventListener('pointercancel', releasePointer);
+    window.addEventListener('mouseup', releasePointer);
   </script>
 </body>
 </html>
